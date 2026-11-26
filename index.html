@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="En enkel app för att hålla koll på inkomster och utgifter.">
+<title>Min ekonomi</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#1a2940;--text:#f4f7fb;--muted:#9aabc1;--green:#38d996;--red:#ff7185;--blue:#75a7ff;--line:#26364d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#14243b 0,#0b1220 45%);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px))}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{font-weight:750;font-size:21px;letter-spacing:-.5px}.tag{font-size:12px;color:var(--green);background:#123a32;padding:6px 10px;border-radius:20px}
+.balance{background:linear-gradient(135deg,#1c3c52,#1b2c47);border:1px solid #31506b;border-radius:24px;padding:24px;margin-bottom:14px;box-shadow:0 18px 50px #0003}.muted{color:var(--muted);font-size:13px}.amount{font-size:38px;font-weight:800;letter-spacing:-1.5px;margin:5px 0 18px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{background:#ffffff0d;border-radius:14px;padding:13px}.stat strong{display:block;font-size:19px;margin-top:4px}.positive{color:var(--green)}.negative{color:var(--red)}
+.tabs{display:flex;gap:8px;margin:20px 0 14px;overflow:auto}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 14px;border-radius:12px;font-weight:650;white-space:nowrap;cursor:pointer}.tab.active{background:#203958;color:white;border-color:#41648d}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px}.panel h2{font-size:17px;margin:0 0 14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}input,select{width:100%;background:#0d1726;border:1px solid #30425b;border-radius:12px;padding:12px;color:var(--text);font:inherit;min-width:0}input::placeholder{color:#74869d}button.primary{width:100%;border:0;border-radius:12px;padding:13px;background:var(--green);color:#06251b;font-weight:800;font-size:15px;margin-top:10px;cursor:pointer}button:active{transform:scale(.99)}
+.list{display:flex;flex-direction:column;gap:9px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);padding:12px;border-radius:13px}.item .name{font-weight:650}.item small{display:block;color:var(--muted);margin-top:3px}.item .right{display:flex;align-items:center;gap:10px;font-weight:750;white-space:nowrap}.delete{background:#3a2230;color:#ff9aaa;border:0;border-radius:9px;padding:7px 9px;cursor:pointer}.empty{color:var(--muted);text-align:center;padding:20px 8px}.hidden{display:none!important}.hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px}
+.presethead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.presethead h2{margin:0}.linkbtn{background:none;border:1px solid var(--line);color:var(--blue);border-radius:10px;padding:6px 11px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.plist{display:flex;flex-direction:column;gap:8px;margin-top:10px}.pwrap{position:relative;border-radius:13px;overflow:hidden;background:#12372f}.pwrap .bgmsg{position:absolute;inset:0;display:flex;align-items:center;padding-left:16px;color:var(--green);font-weight:800;font-size:14px}.prow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);padding:13px 12px;border-radius:13px;touch-action:pan-y;user-select:none;-webkit-user-select:none;transition:transform .18s ease}.prow.drag{transition:none}.prow .pname{font-weight:650}.prow .pamt{color:var(--green);font-weight:750;white-space:nowrap}.prow .grip{color:var(--muted);font-size:12px;margin-top:3px;display:block}.pbtns{display:flex;gap:6px;align-items:center}.addbtn{background:#143d33;color:var(--green);border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer}.editbtn{background:#1f3452;color:var(--blue);border:0;border-radius:9px;padding:7px 9px;cursor:pointer}
+.snack{position:fixed;left:14px;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:560px;margin:auto;background:#223652;border:1px solid #41648d;border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 10px 30px #0008;z-index:10;transition:opacity .2s,transform .2s}.snack.off{opacity:0;transform:translateY(12px);pointer-events:none}.snack button{background:none;border:0;color:var(--green);font-weight:800;font:inherit;font-weight:800;cursor:pointer}
+.monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.monthnav button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;width:44px;height:44px;font-size:20px;cursor:pointer}.monthnav strong{font-size:18px}.stats3{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats3 .wide{grid-column:1/-1}
+.chart{display:flex;align-items:flex-end;gap:8px;height:150px;margin:6px 0 4px}.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}.bars{display:flex;align-items:flex-end;gap:3px;height:calc(100% - 20px);width:100%;justify-content:center}.bar{width:42%;max-width:22px;border-radius:5px 5px 0 0;min-height:2px}.bar.i{background:var(--green)}.bar.e{background:var(--red)}.col small{color:var(--muted);font-size:11px;margin-top:5px;height:15px}.col.sel small{color:var(--text);font-weight:700}.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.mrow{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;align-items:center;background:var(--panel2);padding:11px 12px;border-radius:13px;font-size:13px;cursor:pointer}.mrow.sel{outline:1px solid #41648d}.mrow.hdr{background:none;color:var(--muted);cursor:default;padding-top:0;padding-bottom:4px;font-size:12px}.mrow span:not(:first-child){text-align:right}
+@media(max-width:480px){main{padding:18px 13px 36px}.amount{font-size:33px}.formgrid{grid-template-columns:1fr}.balance{padding:20px}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="brand">◈ Min ekonomi</div><span class="tag">ÖVERSIKT</span></header>
+<section class="balance">
+ <div class="muted">Pengar kvar</div><div class="amount" id="remaining">0 kr</div>
+ <div class="stats"><div class="stat"><span class="muted">Totala inkomster</span><strong class="positive" id="incomeTotal">0 kr</strong></div><div class="stat"><span class="muted">Totala utgifter</span><strong class="negative" id="expenseTotal">0 kr</strong></div></div>
+</section>
+<nav class="tabs"><button class="tab active" data-tab="income">Inkomster</button><button class="tab" data-tab="expense">Utgifter</button><button class="tab" data-tab="sales">Försäljning</button><button class="tab" data-tab="stats">Statistik</button><button class="tab" data-tab="history">Historik</button></nav>
+<section id="income" class="panel">
+ <div class="presethead"><h2>Snabbval</h2><button class="linkbtn" id="editPresets" type="button">Redigera</button></div>
+ <div class="muted">Svep åt höger på ett snabbval för att lägga till det som inkomst.</div>
+ <div class="plist" id="presetList"></div>
+ <form id="presetForm" class="hidden" style="margin-top:12px"><div class="formgrid"><input id="presetName" placeholder="Namn (t.ex. Pizza)" required><input id="presetAmount" type="number" min="0.01" step="0.01" placeholder="Belopp (kr)" required></div><button class="primary" id="presetSubmit">＋ Spara snabbval</button><button class="linkbtn hidden" id="presetCancel" type="button" style="width:100%;margin-top:8px;padding:11px">Avbryt redigering</button></form>
+ <h2 style="margin-top:24px">Lägg till inkomst</h2><form id="incomeForm"><div class="formgrid"><input id="incomeName" placeholder="Vad fick du pengar för?" required><input id="incomeAmount" type="number" min="0.01" step="0.01" placeholder="Belopp (kr)" required></div><button class="primary">＋ Lägg till inkomst</button></form>
+ <p class="hint">Exempel: lön, Swish, försäljning eller annan inkomst.</p><h2 style="margin-top:22px">Inkomster</h2><div class="list" id="incomeList"></div>
+</section>
+<section id="expense" class="panel hidden">
+ <h2>Lägg till utgift</h2><form id="expenseForm"><div class="formgrid"><input id="expenseName" placeholder="Vad ska du betala?" required><input id="expenseAmount" type="number" min="0.01" step="0.01" placeholder="Belopp (kr)" required></div><button class="primary">＋ Lägg till utgift</button></form>
+ <h2 style="margin-top:22px">Utgifter</h2><div class="list" id="expenseList"></div>
+</section>
+<section id="sales" class="panel hidden">
+ <h2>Registrera försäljning</h2><div class="formgrid"><label><span class="muted">Vanliga saker (200 kr/st)</span><input id="singleCount" type="number" min="0" step="1" value="0"></label><label><span class="muted">3-pack (500 kr/st)</span><input id="packCount" type="number" min="0" step="1" value="0"></label></div>
+ <div class="hint">Ändra antal så räknas försäljningssumman om. Registreringen sparas som en inkomst.</div><button class="primary" id="saveSales">Spara försäljning som inkomst</button>
+ <div class="stat" style="margin-top:14px"><span class="muted">Beräknad försäljningsinkomst</span><strong class="positive" id="salesPreview">0 kr</strong></div>
+</section>
+<section id="stats" class="panel hidden">
+ <div class="monthnav"><button id="prevMonth" type="button" aria-label="Föregående månad">‹</button><strong id="monthLabel"></strong><button id="nextMonth" type="button" aria-label="Nästa månad">›</button></div>
+ <div class="stats3"><div class="stat"><span class="muted">Inkomster</span><strong class="positive" id="mIncome">0 kr</strong></div><div class="stat"><span class="muted">Utgifter</span><strong class="negative" id="mExpense">0 kr</strong></div><div class="stat wide"><span class="muted">Kvar denna månad</span><strong id="mNet">0 kr</strong></div></div>
+ <h2 style="margin-top:22px">Senaste 6 månaderna</h2><div class="chart" id="chart"></div><div class="legend"><span><i style="background:var(--green)"></i>Inkomster</span><span><i style="background:var(--red)"></i>Utgifter</span></div>
+ <h2 style="margin-top:22px">Alla månader</h2><div class="list" id="monthList"></div>
+</section>
+<section id="history" class="panel hidden"><h2>Alla händelser</h2><div class="list" id="historyList"></div><p class="hint">Du kan ta bort en rad med ×. Summorna räknas om automatiskt.</p></section>
+<section id="backup" class="panel">
+ <h2>Säkerhetskopia</h2>
+ <p class="hint" style="margin-top:0">Datan sparas bara i webbläsaren på den här telefonen. Spara en kopia ibland, så förlorar du inget om du rensar Chrome-data.</p>
+ <div class="formgrid"><button class="primary" id="exportBtn" type="button">⬇ Spara kopia</button><button class="primary" id="importBtn" type="button" style="background:#75a7ff">⬆ Läs in kopia</button></div>
+ <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+ <div class="hint" id="backupMsg"></div>
+</section>
+</main>
+<div class="snack off" id="snack"><span id="snackMsg"></span><button id="snackUndo" type="button">Ångra</button></div>
+<script>
+const KEY='min-ekonomi-v1'; let entries=[];
+try{entries=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){entries=[]}
+const $=id=>document.getElementById(id), fmt=n=>new Intl.NumberFormat('sv-SE',{maximumFractionDigits:2}).format(n)+' kr';
+function save(){localStorage.setItem(KEY,JSON.stringify(entries));render()}
+function add(type,name,amount){if(!name.trim()||!Number.isFinite(amount)||amount<=0)return null;const e={id:Date.now()+Math.random(),type,name:name.trim(),amount,date:new Date().toLocaleDateString('sv-SE')};entries.unshift(e);save();return e}
+function remove(id){entries=entries.filter(x=>x.id!==id);save()}
+function row(x){const d=document.createElement('div');d.className='item';const left=document.createElement('div');left.innerHTML='<span class="name"></span><small></small>';left.querySelector('.name').textContent=x.name;left.querySelector('small').textContent=x.date;const right=document.createElement('div');right.className='right';const val=document.createElement('span');val.className=x.type==='income'?'positive':'negative';val.textContent=(x.type==='income'?'+':'−')+' '+fmt(x.amount);const del=document.createElement('button');del.className='delete';del.textContent='×';del.setAttribute('aria-label','Ta bort');del.onclick=()=>remove(x.id);right.append(val,del);d.append(left,right);return d}
+function fill(id,arr){const el=$(id);el.replaceChildren();if(!arr.length){const p=document.createElement('div');p.className='empty';p.textContent='Inget tillagt ännu';el.append(p)}else arr.forEach(x=>el.append(row(x)))}
+function render(){const inc=entries.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0),exp=entries.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0);$('incomeTotal').textContent=fmt(inc);$('expenseTotal').textContent=fmt(exp);$('remaining').textContent=fmt(inc-exp);fill('incomeList',entries.filter(x=>x.type==='income'));fill('expenseList',entries.filter(x=>x.type==='expense'));fill('historyList',entries);renderPresets();renderStats()}
+$('incomeForm').onsubmit=e=>{e.preventDefault();add('income',$('incomeName').value,Number($('incomeAmount').value));e.target.reset()};
+$('expenseForm').onsubmit=e=>{e.preventDefault();add('expense',$('expenseName').value,Number($('expenseAmount').value));e.target.reset()};
+function preview(){$('salesPreview').textContent=fmt(Math.max(0,Number($('singleCount').value)||0)*200+Math.max(0,Number($('packCount').value)||0)*500)}
+$('singleCount').oninput=preview;$('packCount').oninput=preview;
+$('saveSales').onclick=()=>{const n=Number($('singleCount').value)||0,p=Number($('packCount').value)||0,total=n*200+p*500;if(total<=0)return;add('income',`Försäljning: ${n} vanliga, ${p} st 3-pack`,total);$('singleCount').value=0;$('packCount').value=0;preview()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['income','expense','sales','stats','history'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab))});
+
+/* ---------- Snackbar with undo ---------- */
+let snackTimer=null,undoFn=null;
+function toast(msg,undo){$('snackMsg').textContent=msg;undoFn=undo||null;$('snackUndo').classList.toggle('hidden',!undo);$('snack').classList.remove('off');clearTimeout(snackTimer);snackTimer=setTimeout(()=>$('snack').classList.add('off'),4000)}
+$('snackUndo').onclick=()=>{if(undoFn)undoFn();undoFn=null;$('snack').classList.add('off')};
+
+/* ---------- Presets (customizable, swipe right to add) ---------- */
+const PKEY='min-ekonomi-presets-v1';
+let presets=null;
+try{presets=JSON.parse(localStorage.getItem(PKEY))}catch(e){}
+if(!Array.isArray(presets))presets=[{id:1,name:'Pizza',amount:200}];
+let editingPreset=null,presetEditMode=false;
+function savePresets(){try{localStorage.setItem(PKEY,JSON.stringify(presets))}catch(e){}renderPresets()}
+function addFromPreset(p){const e=add('income',p.name,p.amount);if(e)toast('+ '+fmt(p.amount)+' · '+p.name,()=>remove(e.id));if(navigator.vibrate)navigator.vibrate(25)}
+function presetRow(p){
+ const wrap=document.createElement('div');wrap.className='pwrap';
+ const bg=document.createElement('div');bg.className='bgmsg';bg.textContent='＋ Lägg till '+fmt(p.amount);
+ const row=document.createElement('div');row.className='prow';
+ const left=document.createElement('div');left.innerHTML='<span class="pname"></span><small class="grip"></small>';
+ left.querySelector('.pname').textContent=p.name;left.querySelector('.grip').textContent=presetEditMode?'':'Svep åt höger →';
+ const right=document.createElement('div');right.className='pbtns';
+ const amt=document.createElement('span');amt.className='pamt';amt.textContent=fmt(p.amount);right.append(amt);
+ if(presetEditMode){
+  const ed=document.createElement('button');ed.className='editbtn';ed.type='button';ed.textContent='✎';ed.setAttribute('aria-label','Ändra');ed.onclick=()=>startEditPreset(p.id);
+  const del=document.createElement('button');del.className='delete';del.type='button';del.textContent='×';del.setAttribute('aria-label','Ta bort snabbval');del.onclick=()=>{presets=presets.filter(x=>x.id!==p.id);if(editingPreset===p.id)resetPresetForm();savePresets()};
+  right.append(ed,del);
+ }else{
+  const plus=document.createElement('button');plus.className='addbtn';plus.type='button';plus.textContent='＋';plus.setAttribute('aria-label','Lägg till');plus.onclick=()=>addFromPreset(p);right.append(plus);
+  let sx=0,sy=0,dx=0,active=false,locked=false;
+  row.addEventListener('pointerdown',e=>{if(e.target===plus)return;active=true;locked=false;sx=e.clientX;sy=e.clientY;dx=0});
+  row.addEventListener('pointermove',e=>{if(!active)return;dx=e.clientX-sx;const dy=e.clientY-sy;
+   if(!locked&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){active=false;row.style.transform='';return}
+   if(Math.abs(dx)>8){locked=true;row.classList.add('drag');try{row.setPointerCapture(e.pointerId)}catch(_){}}
+   if(locked)row.style.transform='translateX('+Math.max(0,Math.min(dx,200))+'px)'});
+  const end=()=>{if(!active&&!locked)return;active=false;row.classList.remove('drag');const ok=dx>90;row.style.transform='';if(ok)addFromPreset(p);dx=0;locked=false};
+  row.addEventListener('pointerup',end);row.addEventListener('pointercancel',()=>{active=false;locked=false;row.classList.remove('drag');row.style.transform=''});
+ }
+ row.prepend(left);row.append(right);wrap.append(bg,row);return wrap}
+function renderPresets(){const el=$('presetList');el.replaceChildren();
+ if(!presets.length){const d=document.createElement('div');d.className='empty';d.textContent='Inga snabbval. Tryck Redigera för att lägga till.';el.append(d)}
+ else presets.forEach(p=>el.append(presetRow(p)));
+ $('editPresets').textContent=presetEditMode?'Klar':'Redigera';$('presetForm').classList.toggle('hidden',!presetEditMode)}
+function resetPresetForm(){editingPreset=null;$('presetForm').reset();$('presetSubmit').textContent='＋ Spara snabbval';$('presetCancel').classList.add('hidden')}
+function startEditPreset(id){const p=presets.find(x=>x.id===id);if(!p)return;editingPreset=id;$('presetName').value=p.name;$('presetAmount').value=p.amount;$('presetSubmit').textContent='Uppdatera snabbval';$('presetCancel').classList.remove('hidden');$('presetName').focus()}
+$('editPresets').onclick=()=>{presetEditMode=!presetEditMode;if(!presetEditMode)resetPresetForm();renderPresets()};
+$('presetCancel').onclick=()=>{resetPresetForm()};
+$('presetForm').onsubmit=e=>{e.preventDefault();const name=$('presetName').value.trim(),amount=Number($('presetAmount').value);if(!name||!(amount>0))return;
+ if(editingPreset!==null){const p=presets.find(x=>x.id===editingPreset);if(p){p.name=name;p.amount=amount}}else presets.push({id:Date.now(),name,amount});
+ resetPresetForm();savePresets()};
+
+/* ---------- Monthly statistics ---------- */
+const mkey=x=>/^\d{4}-\d{2}/.test(x.date||'')?x.date.slice(0,7):null;
+const nowKey=()=>new Date().toLocaleDateString('sv-SE').slice(0,7);
+let selMonth=nowKey();
+function monthName(k){const [y,m]=k.split('-').map(Number);const n=new Date(y,m-1,1).toLocaleDateString('sv-SE',{month:'long',year:'numeric'});return n.charAt(0).toUpperCase()+n.slice(1)}
+function shiftMonth(k,d){const [y,m]=k.split('-').map(Number);const dt=new Date(y,m-1+d,1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')}
+function totals(){const t={};entries.forEach(x=>{const k=mkey(x);if(!k)return;t[k]=t[k]||{i:0,e:0};if(x.type==='income')t[k].i+=x.amount;else t[k].e+=x.amount});return t}
+function signed(n){return (n<0?'−':n>0?'+':'')+fmt(Math.abs(n))}
+function renderStats(){
+ const t=totals(),cur=t[selMonth]||{i:0,e:0},net=cur.i-cur.e;
+ $('monthLabel').textContent=monthName(selMonth);
+ $('mIncome').textContent=fmt(cur.i);$('mExpense').textContent=fmt(cur.e);
+ const n=$('mNet');n.textContent=signed(net);n.className=net>=0?'positive':'negative';
+ $('nextMonth').disabled=selMonth>=nowKey();$('nextMonth').style.opacity=$('nextMonth').disabled?.35:1;
+ // last 6 months ending at selected month
+ const keys=[];for(let i=5;i>=0;i--)keys.push(shiftMonth(selMonth,-i));
+ const max=Math.max(1,...keys.map(k=>Math.max((t[k]||{i:0}).i,(t[k]||{e:0}).e)));
+ const ch=$('chart');ch.replaceChildren();
+ keys.forEach(k=>{const v=t[k]||{i:0,e:0};const col=document.createElement('div');col.className='col'+(k===selMonth?' sel':'');
+  const bars=document.createElement('div');bars.className='bars';
+  const bi=document.createElement('div');bi.className='bar i';bi.style.height=(v.i/max*100)+'%';
+  const be=document.createElement('div');be.className='bar e';be.style.height=(v.e/max*100)+'%';
+  bars.append(bi,be);const lab=document.createElement('small');lab.textContent=monthName(k).slice(0,3);
+  col.append(bars,lab);col.onclick=()=>{selMonth=k;renderStats()};ch.append(col)});
+ // table of all months
+ const ml=$('monthList');ml.replaceChildren();
+ const all=Object.keys(t).sort().reverse();
+ if(!all.length){const d=document.createElement('div');d.className='empty';d.textContent='Ingen statistik ännu';ml.append(d);return}
+ const hdr=document.createElement('div');hdr.className='mrow hdr';['Månad','Inkomst','Utgift','Kvar'].forEach(s=>{const sp=document.createElement('span');sp.textContent=s;hdr.append(sp)});ml.append(hdr);
+ all.forEach(k=>{const v=t[k],d=v.i-v.e;const r=document.createElement('div');r.className='mrow'+(k===selMonth?' sel':'');
+  const a=document.createElement('span');a.textContent=monthName(k);
+  const b=document.createElement('span');b.className='positive';b.textContent=fmt(v.i);
+  const c=document.createElement('span');c.className='negative';c.textContent=fmt(v.e);
+  const e=document.createElement('span');e.className=d>=0?'positive':'negative';e.textContent=signed(d);
+  r.append(a,b,c,e);r.onclick=()=>{selMonth=k;renderStats()};ml.append(r)})}
+$('prevMonth').onclick=()=>{selMonth=shiftMonth(selMonth,-1);renderStats()};
+$('nextMonth').onclick=()=>{if(selMonth<nowKey()){selMonth=shiftMonth(selMonth,1);renderStats()}};
+
+/* ---------- Backup / restore ---------- */
+function bmsg(t){$('backupMsg').textContent=t}
+$('exportBtn').onclick=()=>{
+ const data={app:'min-ekonomi',version:2,exported:new Date().toISOString(),entries,presets};
+ const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='min-ekonomi-'+new Date().toLocaleDateString('sv-SE')+'.json';
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+ bmsg('Kopia sparad ('+entries.length+' poster, '+presets.length+' snabbval).')};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.entries))throw 0;
+  const ok=d.entries.filter(x=>x&&(x.type==='income'||x.type==='expense')&&Number.isFinite(Number(x.amount))).map(x=>({id:x.id||Date.now()+Math.random(),type:x.type,name:String(x.name||''),amount:Number(x.amount),date:String(x.date||'')}));
+  if(!confirm('Ersätta nuvarande data med kopian ('+ok.length+' poster)?')){bmsg('Avbrutet.');return}
+  entries=ok;if(Array.isArray(d.presets))presets=d.presets.filter(p=>p&&p.name&&Number(p.amount)>0).map(p=>({id:p.id||Date.now()+Math.random(),name:String(p.name),amount:Number(p.amount)}));
+  savePresets();save();bmsg('Kopia inläst: '+ok.length+' poster.')}catch(_){bmsg('Filen kunde inte läsas.')}
+  e.target.value=''};r.readAsText(f)};
+render();preview();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
